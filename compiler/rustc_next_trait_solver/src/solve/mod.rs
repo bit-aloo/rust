@@ -239,7 +239,8 @@ where
         goal: Goal<I, (I::Const, I::Ty)>,
     ) -> QueryResultOrRerunNonErased<I> {
         let (ct, ty) = goal.predicate;
-        let ct = self.structurally_normalize_const(goal.param_env, ct)?;
+        let ct =
+            self.structurally_normalize_const(goal.param_env, ty::Unnormalized::new_wip(ct))?;
 
         let ct_ty = match ct.kind() {
             ty::ConstKind::Infer(_) => {
@@ -348,9 +349,9 @@ where
     fn structurally_normalize_ty(
         &mut self,
         param_env: I::ParamEnv,
-        ty: I::Ty,
+        ty: ty::Unnormalized<I, I::Ty>,
     ) -> Result<I::Ty, NoSolutionOrRerunNonErased> {
-        self.structurally_normalize_term(param_env, ty.into()).map(|term| term.expect_ty())
+        self.structurally_normalize_term(param_env, ty.map(Into::into)).map(|term| term.expect_ty())
     }
 
     /// Normalize a const for when it is structurally matched on, or more likely
@@ -363,9 +364,10 @@ where
     fn structurally_normalize_const(
         &mut self,
         param_env: I::ParamEnv,
-        ct: I::Const,
+        ct: ty::Unnormalized<I, I::Const>,
     ) -> Result<I::Const, NoSolutionOrRerunNonErased> {
-        self.structurally_normalize_term(param_env, ct.into()).map(|term| term.expect_const())
+        self.structurally_normalize_term(param_env, ct.map(Into::into))
+            .map(|term| term.expect_const())
     }
 
     /// Normalize a term for when it is structurally matched on.
@@ -375,8 +377,9 @@ where
     fn structurally_normalize_term(
         &mut self,
         param_env: I::ParamEnv,
-        term: I::Term,
+        term: ty::Unnormalized<I, I::Term>,
     ) -> Result<I::Term, NoSolutionOrRerunNonErased> {
+        let term = term.skip_normalization();
         if !self.cx().renormalize_rigid_aliases() && !term.is_non_rigid_alias() {
             return Ok(term);
         }

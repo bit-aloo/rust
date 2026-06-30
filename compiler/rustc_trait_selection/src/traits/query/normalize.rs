@@ -45,10 +45,14 @@ impl<'a, 'tcx> At<'a, 'tcx> {
     /// N.B. Once the new solver is stabilized this method of normalization will
     /// likely be removed as trait solver operations are already cached by the query
     /// system making this redundant.
-    fn query_normalize<T>(self, value: T) -> Result<Normalized<'tcx, T>, NoSolution>
+    fn query_normalize<T>(
+        self,
+        value: Unnormalized<'tcx, T>,
+    ) -> Result<Normalized<'tcx, T>, NoSolution>
     where
         T: TypeFoldable<TyCtxt<'tcx>>,
     {
+        let value = value.skip_normalization();
         debug!(
             "normalize::<{}>(value={:?}, param_env={:?}, cause={:?})",
             std::any::type_name::<T>(),

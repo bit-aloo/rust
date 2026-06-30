@@ -686,7 +686,7 @@ where
             |ecx| -> Result<_, NoSolutionOrRerunNonErased> {
                 let assume = ecx.structurally_normalize_const(
                     goal.param_env,
-                    goal.predicate.trait_ref.args.const_at(2),
+                    ty::Unnormalized::new_wip(goal.predicate.trait_ref.args.const_at(2)),
                 )?;
 
                 let certainty = ecx.is_transmutable(
@@ -819,7 +819,7 @@ where
                 // in the other functions below.
                 let b_ty = ecx.structurally_normalize_ty(
                     goal.param_env,
-                    goal.predicate.trait_ref.args.type_at(1),
+                    ty::Unnormalized::new_wip(goal.predicate.trait_ref.args.type_at(1)),
                 )?;
 
                 let goal = goal.with(ecx.cx(), (a_ty, b_ty));

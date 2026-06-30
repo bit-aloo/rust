@@ -1080,7 +1080,7 @@ impl<'cx, 'tcx> SelectionContext<'cx, 'tcx> {
                     param_env,
                     obligation.cause.clone(),
                     obligation.recursion_depth + 1,
-                    obligation.predicate,
+                    Unnormalized::new_wip(obligation.predicate),
                     &mut nested_obligations,
                 );
                 if predicate != obligation.predicate {
@@ -1727,7 +1727,7 @@ impl<'cx, 'tcx> SelectionContext<'cx, 'tcx> {
                 obligation.param_env,
                 obligation.cause.clone(),
                 obligation.recursion_depth + 1,
-                trait_bound,
+                Unnormalized::new_wip(trait_bound),
             )
         });
         self.infcx
@@ -1786,7 +1786,7 @@ impl<'cx, 'tcx> SelectionContext<'cx, 'tcx> {
                     obligation.param_env,
                     obligation.cause.clone(),
                     obligation.recursion_depth + 1,
-                    infer_predicate.projection_term,
+                    Unnormalized::new_wip(infer_predicate.projection_term),
                     &mut nested_obligations,
                 )
             })
@@ -2472,7 +2472,7 @@ impl<'tcx> SelectionContext<'_, 'tcx> {
                             param_env,
                             cause.clone(),
                             recursion_depth,
-                            placeholder_ty,
+                            Unnormalized::new_wip(placeholder_ty),
                         )
                     });
 
@@ -2546,7 +2546,7 @@ impl<'tcx> SelectionContext<'_, 'tcx> {
                     obligation.param_env,
                     obligation.cause.clone(),
                     obligation.recursion_depth + 1,
-                    trait_ref,
+                    Unnormalized::new_wip(trait_ref),
                 )
             });
 
@@ -2605,7 +2605,7 @@ impl<'tcx> SelectionContext<'_, 'tcx> {
             obligation.param_env,
             obligation.cause.clone(),
             obligation.recursion_depth + 1,
-            unnormalized_upcast_principal,
+            Unnormalized::new_wip(unnormalized_upcast_principal),
             &mut nested,
         );
 
@@ -2868,7 +2868,7 @@ impl<'tcx> SelectionContext<'_, 'tcx> {
                 param_env,
                 cause.clone(),
                 recursion_depth,
-                predicate.skip_norm_wip(),
+                Unnormalized::new_wip(predicate.skip_norm_wip()),
                 &mut obligations,
             );
             obligations.push(Obligation {
@@ -2891,7 +2891,7 @@ impl<'tcx> SelectionContext<'_, 'tcx> {
                     param_env,
                     cause.clone(),
                     recursion_depth,
-                    clause,
+                    Unnormalized::new_wip(clause),
                     &mut obligations,
                 );
                 obligations.push(Obligation {

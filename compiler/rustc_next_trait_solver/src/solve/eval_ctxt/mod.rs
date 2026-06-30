@@ -1391,7 +1391,8 @@ where
         trait_ref: ty::TraitRef<I>,
     ) -> Result<bool, NoSolutionOrRerunNonErased> {
         let delegate = self.delegate;
-        let lazily_normalize_ty = |ty| self.structurally_normalize_ty(param_env, ty);
+        let lazily_normalize_ty =
+            |ty| self.structurally_normalize_ty(param_env, ty::Unnormalized::new_wip(ty));
         coherence::trait_ref_is_knowable(&**delegate, trait_ref, lazily_normalize_ty)
             .map(|is_knowable| is_knowable.is_ok())
     }

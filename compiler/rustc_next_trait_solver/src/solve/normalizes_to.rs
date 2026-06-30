@@ -61,7 +61,10 @@ where
                     let Some(term) = arg.as_term() else {
                         continue;
                     };
-                    match ecx.structurally_normalize_term(goal.param_env, term) {
+                    match ecx.structurally_normalize_term(
+                        goal.param_env,
+                        ty::Unnormalized::new_wip(term),
+                    ) {
                         Ok(term) => {
                             if term.is_infer() {
                                 return Some(ecx.evaluate_added_goals_and_make_canonical_response(

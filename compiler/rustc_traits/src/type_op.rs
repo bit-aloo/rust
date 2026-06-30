@@ -4,7 +4,7 @@ use rustc_infer::infer::TyCtxtInferExt;
 use rustc_infer::infer::canonical::{Canonical, CanonicalQueryInput, QueryResponse};
 use rustc_middle::query::Providers;
 use rustc_middle::traits::query::NoSolution;
-use rustc_middle::ty::{Clause, FnSig, ParamEnvAnd, PolyFnSig, Ty, TyCtxt, TypeFoldable};
+use rustc_middle::ty::{self, Clause, FnSig, ParamEnvAnd, PolyFnSig, Ty, TyCtxt, TypeFoldable};
 use rustc_span::DUMMY_SP;
 use rustc_trait_selection::infer::InferCtxtBuilderExt;
 use rustc_trait_selection::traits::query::normalize::QueryNormalizeExt;
@@ -44,8 +44,10 @@ where
     T: fmt::Debug + TypeFoldable<TyCtxt<'tcx>>,
 {
     let ParamEnvAnd { param_env, value: Normalize { value } } = key;
-    let Normalized { value, obligations } =
-        ocx.infcx.at(&ObligationCause::dummy(), param_env).query_normalize(value)?;
+    let Normalized { value, obligations } = ocx
+        .infcx
+        .at(&ObligationCause::dummy(), param_env)
+        .query_normalize(ty::Unnormalized::new_wip(value))?;
     ocx.register_obligations(obligations);
     Ok(value)
 }

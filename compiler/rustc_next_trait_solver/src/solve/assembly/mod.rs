@@ -436,9 +436,10 @@ where
         let mut candidates = vec![];
         let mut failed_candidate_info =
             FailedCandidateInfo { param_env_head_usages: CandidateHeadUsages::default() };
-        let Ok(normalized_self_ty) =
-            self.structurally_normalize_ty(goal.param_env, goal.predicate.self_ty())
-        else {
+        let Ok(normalized_self_ty) = self.structurally_normalize_ty(
+            goal.param_env,
+            ty::Unnormalized::new_wip(goal.predicate.self_ty()),
+        ) else {
             return Ok((candidates, failed_candidate_info));
         };
 
@@ -847,7 +848,10 @@ where
         };
 
         // Recurse on the self type of the projection.
-        match self.structurally_normalize_ty(goal.param_env, projection_ty.projection_self_ty()) {
+        match self.structurally_normalize_ty(
+            goal.param_env,
+            ty::Unnormalized::new_wip(projection_ty.projection_self_ty()),
+        ) {
             Ok(next_self_ty) => self.assemble_alias_bound_candidates_recur(
                 next_self_ty,
                 goal,
@@ -1370,7 +1374,9 @@ where
 
     fn visit_ty(&mut self, ty: I::Ty) -> Self::Result {
         let ty = self.ecx.replace_bound_vars(ty, &mut self.universes);
-        let Ok(ty) = self.ecx.structurally_normalize_ty(self.param_env, ty) else {
+        let Ok(ty) =
+            self.ecx.structurally_normalize_ty(self.param_env, ty::Unnormalized::new_wip(ty))
+        else {
             return ControlFlow::Break(Err(NoSolution));
         };
 
@@ -1408,7 +1414,9 @@ where
 
     fn visit_const(&mut self, ct: I::Const) -> Self::Result {
         let ct = self.ecx.replace_bound_vars(ct, &mut self.universes);
-        let Ok(ct) = self.ecx.structurally_normalize_const(self.param_env, ct) else {
+        let Ok(ct) =
+            self.ecx.structurally_normalize_const(self.param_env, ty::Unnormalized::new_wip(ct))
+        else {
             return ControlFlow::Break(Err(NoSolution));
         };
 

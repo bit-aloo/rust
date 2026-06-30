@@ -68,16 +68,23 @@ where
                 // E.g. it's observable that we don't normalize nested aliases with bound vars in
                 // `structurally_normalize` and because we use structural lookup, we also don't
                 // reuse an entry for `Tait<for<'a> fn(&'a ())>` for `Tait<for<'b> fn(&'b ())>`.
-                let normalized_args =
-                    cx.mk_args_from_iter(opaque_ty.args.iter().map(|arg| match arg.kind() {
+                let normalized_args = cx.mk_args_from_iter(opaque_ty.args.iter().map(|arg| {
+                    match arg.kind() {
                         ty::GenericArgKind::Lifetime(lt) => Ok(lt.into()),
-                        ty::GenericArgKind::Type(ty) => {
-                            self.structurally_normalize_ty(goal.param_env, ty).map(Into::into)
-                        }
-                        ty::GenericArgKind::Const(ct) => {
-                            self.structurally_normalize_const(goal.param_env, ct).map(Into::into)
-                        }
-                    }))?;
+                        ty::GenericArgKind::Type(ty) => self
+                            .structurally_normalize_ty(
+                                goal.param_env,
+                                ty::Unnormalized::new_wip(ty),
+                            )
+                            .map(Into::into),
+                        ty::GenericArgKind::Const(ct) => self
+                            .structurally_normalize_const(
+                                goal.param_env,
+                                ty::Unnormalized::new_wip(ct),
+                            )
+                            .map(Into::into),
+                    }
+                }))?;
 
                 let opaque_type_key = ty::OpaqueTypeKey { def_id, args: normalized_args };
                 if let Some(prev) = self.register_hidden_type_in_storage(opaque_type_key, expected)
