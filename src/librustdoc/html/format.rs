@@ -19,7 +19,7 @@ use rustc_hir::def::{DefKind, MacroKinds};
 use rustc_hir::def_id::{DefId, LOCAL_CRATE};
 use rustc_hir::{ConstStability, StabilityLevel, StableSince};
 use rustc_metadata::creader::CStore;
-use rustc_middle::ty::{self, TyCtxt, TypingMode};
+use rustc_middle::ty::{self, TyCtxt, TypingMode, Unnormalized};
 use rustc_span::symbol::kw;
 use rustc_span::{Ident, Symbol};
 use tracing::{debug, trace};
@@ -431,7 +431,9 @@ fn generate_item_def_id_path(
         let ty = tcx.type_of(def_id);
         let ty = infcx
             .at(&ObligationCause::dummy(), tcx.param_env(def_id))
-            .query_normalize(ty::Binder::dummy(ty.instantiate_identity().skip_norm_wip()))
+            .query_normalize(Unnormalized::new_wip(ty::Binder::dummy(
+                ty.instantiate_identity().skip_norm_wip(),
+            )))
             .map(|resolved| infcx.resolve_vars_if_possible(resolved.value).skip_binder())
             .unwrap_or(ty.skip_binder());
         if let Some(new_def_id) = ty.ty_adt_def().map(|adt| adt.did()) {
